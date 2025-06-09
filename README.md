@@ -1,2 +1,1 @@
-# ortofoto
-sottodirectory programma ortofoto
+Questo è un repository per una applicazione di ortofoto
