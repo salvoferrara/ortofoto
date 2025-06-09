@@ -1,123 +1,34 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: sans-serif;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    min-height: 100vh;
+    margin: 20px;
     background-color: #f4f4f4;
-    margin: 0;
-    color: #333;
-}
-
-.container {
-    background-color: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 90%;
-    max-width: 800px;
 }
 
 h1 {
-    color: #0056b3;
-    margin-bottom: 20px;
-}
-
-.upload-section {
-    margin-bottom: 20px;
-}
-
-.custom-file-upload {
-    border: 2px solid #007bff;
-    display: inline-block;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 5px;
-    background-color: #007bff;
-    color: white;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.custom-file-upload:hover {
-    background-color: #0056b3;
-}
-
-#inputImage {
-    display: none; /* Nasconde l'input file predefinito */
-}
-
-.image-area {
-    margin-top: 20px;
-    border: 1px dashed #ccc;
-    padding: 10px;
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative; /* Per posizionare il canvas */
-}
-
-#message {
-    color: #666;
-}
-
-canvas {
-    max-width: 100%; /* Assicura che il canvas non esca dal contenitore */
-    height: auto;
-    border: 1px solid #ddd;
-    box-sizing: border-box; /* Include padding e border nella larghezza/altezza */
-}
-
-#controls {
-    margin-top: 15px;
-}
-
-button {
-    padding: 8px 15px;
-    margin: 5px;
-    border: none;
-    border-radius: 5px;
-    background-color: #28a745;
-    color: white;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #218838;
-}
-
-#resetPointsBtn {
-    background-color: #ffc107;
     color: #333;
 }
 
-#resetPointsBtn:hover {
-    background-color: #e0a800;
+.image-container {
+    position: relative; /* Importante per posizionare il canvas sopra l'immagine */
+    display: inline-block; /* Avvolge solo il contenuto */
+    border: 1px solid #ccc; /* Per vedere i bordi del contenitore */
 }
 
-#straightenBtn {
-    background-color: #17a2b8;
+.image-container img {
+    display: block; /* Rimuove lo spazio extra sotto l'immagine */
+    max-width: 100%; /* L'immagine si adatta al contenitore */
+    height: auto; /* Mantiene le proporzioni */
+    /* Queste regole sono importanti per come l'immagine viene ridimensionata */
+    /* Se vuoi un'immagine di dimensioni fisse, imposta width e height in pixel */
 }
 
-#straightenBtn:hover {
-    background-color: #138496;
-}
-
-.output-section {
-    margin-top: 30px;
-    border-top: 1px solid #eee;
-    padding-top: 20px;
-}
-
-#downloadBtn {
-    background-color: #007bff;
-}
-
-#downloadBtn:hover {
-    background-color: #0056b3;
+.image-container canvas {
+    position: absolute; /* Posiziona il canvas esattamente sopra l'immagine */
+    top: 0;
+    left: 0;
+    /* Il width e height del canvas saranno impostati da JavaScript */
+    /* boundary per test: border: 1px dashed blue; */
 }
