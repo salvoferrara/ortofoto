@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Point Selector</title>
+    <title>Raddrizzamento Foto Web</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Seleziona Punti sull'Immagine</h1>
+    <h1>Raddrizzamento Prospettico Immagini</h1>
 
-    <input type="file" id="imageUpload" accept="image/*">
-    <p>Seleziona un'immagine da caricare.</p>
+    <div class="controls">
+        <input type="file" id="imageUpload" accept="image/*">
+        <button id="resetPointsBtn" style="display: none;">Reset Punti</button>
+        <button id="processImageBtn" style="display: none;">Raddrizza Immagine</button>
+        <button id="downloadImageBtn" style="display: none;">Scarica Immagine</button>
+    </div>
+    
+    <p id="statusMessage">Seleziona un'immagine da caricare.</p>
+    <p id="pointsCounter" style="display: none;">Punti selezionati: 0 di 4</p>
 
     <div class="image-container">
         <img id="imageToProcess" src="" alt="Carica un'immagine">
         <canvas id="imageCanvas"></canvas>
     </div>
-
+    
     <script src="script.js"></script>
 </body>
 </html>

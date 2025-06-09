@@ -5,31 +5,87 @@ body {
     align-items: center;
     margin: 20px;
     background-color: #f4f4f4;
+    color: #333;
 }
 
 h1 {
-    color: #333;
+    color: #0056b3;
+    margin-bottom: 20px;
+}
+
+.controls {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #e9e9e9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 10px; /* Spazio tra i pulsanti */
+    flex-wrap: wrap; /* Permette ai pulsanti di andare a capo su schermi piccoli */
+    justify-content: center;
+}
+
+.controls button,
+.controls input[type="file"] {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.controls button {
+    background-color: #007bff;
+    color: white;
+}
+
+.controls button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.controls button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Stile specifico per l'input file */
+.controls input[type="file"] {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+}
+
+#statusMessage {
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#pointsCounter {
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    color: #555;
+    text-align: center;
 }
 
 .image-container {
     position: relative; 
     display: inline-block; 
-    border: 1px solid #ccc; 
-    /* Aggiungiamo un limite massimo al contenitore se necessario */
+    border: 2px solid #007bff; /* Bordo più evidente per il contenitore dell'immagine */
     max-width: 90vw; /* Non più del 90% della larghezza della viewport */
     max-height: 80vh; /* Non più del 80% dell'altezza della viewport */
-    overflow: hidden; /* Nasconde ciò che esce dai bordi */
+    overflow: hidden; 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    margin-top: 20px; /* Spazio sopra il contenitore */
 }
 
 .image-container img,
 .image-container canvas {
     display: block;
-    position: absolute; /* Posizionamento assoluto per sovrapposizione */
+    position: absolute; 
     top: 0;
     left: 0;
-    /* Facciamo in modo che occupino il 100% del loro contenitore */
     width: 100%; 
     height: 100%;
-    /* Mantiene le proporzioni, riempiendo il più possibile senza tagliare */
-    object-fit: contain; 
+    object-fit: contain; /* L'immagine si adatta mantenendo le proporzioni */
 }
