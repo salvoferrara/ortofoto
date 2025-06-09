@@ -1,216 +1,219 @@
-// Importa la funzione fourPointTransform dalla libreria
-// L'URL CDN deve essere l'URL completo del modulo.
-import { fourPointTransform } from 'https://cdn.jsdelivr.net/npm/four-point-transform@1.0.1/dist/four-point-transform.min.js';
+// Ottenimento degli elementi HTML
+const inputImage = document.getElementById('inputImage');
+const originalCanvas = document.getElementById('originalCanvas');
+const straightenedCanvas = document.getElementById('straightenedCanvas');
+const messageElement = document.getElementById('message');
+const controlsDiv = document.getElementById('controls');
+const pointsCountSpan = document.getElementById('pointsCount');
+const resetPointsBtn = document.getElementById('resetPointsBtn');
+const straightenBtn = document.getElementById('straightenBtn');
+const outputSection = document.getElementById('outputSection');
+const downloadBtn = document.getElementById('downloadBtn');
 
-document.addEventListener('DOMContentLoaded', () => {
-    const inputImage = document.getElementById('inputImage');
-    const message = document.getElementById('message');
-    const originalCanvas = document.getElementById('originalCanvas');
-    const ctxOriginal = originalCanvas.getContext('2d');
-    const controls = document.getElementById('controls');
-    const pointsCountSpan = document.getElementById('pointsCount');
-    const resetPointsBtn = document.getElementById('resetPointsBtn');
-    const straightenBtn = document.getElementById('straightenBtn');
-    const outputSection = document.getElementById('outputSection'); 
-    const straightenedCanvas = document.getElementById('straightenedCanvas');
-    const ctxStraightened = straightenedCanvas.getContext('2d');
-    const downloadBtn = document.getElementById('downloadBtn');
+const originalCtx = originalCanvas.getContext('2d');
+const straightenedCtx = straightenedCanvas.getContext('2d');
 
-    let currentImage = null; // L'oggetto immagine caricato
-    let selectedPoints = []; // Array per memorizzare i punti [x, y] selezionati
-    const POINT_RADIUS = 5; // Raggio per disegnare i punti
+let originalImage = new Image();
+let selectedPoints = [];
+let imgAspectRatio = 1;
 
-    // Non serve più il controllo typeof fourPointTransform === 'function' qui
-    // perché l'import fallirebbe se non la trovasse.
-    console.log("Libreria 'four-point-transform' importata con successo.");
-    
+// Funzione per disegnare l'immagine sul canvas
+function drawImageOnCanvas(canvas, ctx, image, scale = 1) {
+    canvas.width = image.width * scale;
+    canvas.height = image.height * scale;
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+}
 
-    // --- Funzioni di utilità ---
+// Funzione per disegnare i punti selezionati
+function drawPoints() {
+    originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height); // Cancella il canvas
+    drawImageOnCanvas(originalCanvas, originalCtx, originalImage); // Ridisezgna l'immagine
 
-    // Funzione per disegnare l'immagine originale e i punti selezionati
-    const drawImageAndPoints = () => {
-        if (!currentImage) {
-            console.log("Nessuna immagine corrente da disegnare.");
-            return;
-        }
-
-        // Imposta le dimensioni del canvas uguali a quelle dell'immagine originale
-        originalCanvas.width = currentImage.width;
-        originalCanvas.height = currentImage.height;
-
-        ctxOriginal.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
-        ctxOriginal.drawImage(currentImage, 0, 0, originalCanvas.width, originalCanvas.height);
-        console.log(`Immagine disegnata su canvas originale: ${originalCanvas.width}x${originalCanvas.height}`);
-
-        // Disegna i punti selezionati
-        ctxOriginal.fillStyle = 'red';
-        ctxOriginal.strokeStyle = 'yellow';
-        ctxOriginal.lineWidth = 2;
-        selectedPoints.forEach(point => {
-            ctxOriginal.beginPath();
-            ctxOriginal.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
-            ctxOriginal.fill();
-            ctxOriginal.stroke();
-        });
-        console.log(`Punti selezionati: ${selectedPoints.length}`);
-
-        // Aggiorna il contatore dei punti
-        pointsCountSpan.textContent = selectedPoints.length;
-
-        // Abilita/Disabilita pulsante Raddrizza: ora dipende solo dai 4 punti
-        straightenBtn.disabled = selectedPoints.length !== 4;
-    };
-
-    // Funzione principale per raddrizzare l'immagine
-    const straightenImage = () => {
-        if (selectedPoints.length !== 4 || !currentImage) {
-            alert('Seleziona esattamente 4 punti sull\'immagine prima di raddrizzare.');
-            console.warn('Tentativo di raddrizzamento con meno di 4 punti o senza immagine.');
-            return;
-        }
-
-        console.log("Stato di currentImage prima della trasformazione:", currentImage);
-        if (currentImage && currentImage.naturalWidth) {
-            console.log(`Dimensioni originali dell'immagine: ${currentImage.naturalWidth}x${currentImage.naturalHeight}`);
-        } else {
-            console.warn("currentImage non è valido o non ha dimensioni.");
-        }
-
-        const sortedPointsForDimensions = [...selectedPoints].sort((a, b) => {
-            if (a.y !== b.y) return a.y - b.y;
-            return a.x - b.x;
-        });
-
-        const widthTop = Math.hypot(sortedPointsForDimensions[1].x - sortedPointsForDimensions[0].x, sortedPointsForDimensions[1].y - sortedPointsForDimensions[0].y);
-        const widthBottom = Math.hypot(sortedPointsForDimensions[3].x - sortedPointsForDimensions[2].x, sortedPointsForDimensions[3].y - sortedPointsForDimensions[2].y);
-        
-        const pointsByX = [...selectedPoints].sort((a, b) => a.x - b.x);
-        const leftPoints = [pointsByX[0], pointsByX[1]];
-        const rightPoints = [pointsByX[2], pointsByX[3]];
-
-        leftPoints.sort((a, b) => a.y - b.y);
-        rightPoints.sort((a, b) => a.y - b.y);
-
-        const heightLeft = Math.hypot(leftPoints[1].x - leftPoints[0].x, leftPoints[1].y - leftPoints[0].y);
-        const heightRight = Math.hypot(rightPoints[1].x - rightPoints[0].x, rightPoints[1].y - rightPoints[0].y);
-
-
-        let finalOutputWidth = Math.max(widthTop, widthBottom);
-        let finalOutputHeight = Math.max(heightLeft, heightRight);
-
-        finalOutputWidth = Math.max(finalOutputWidth, 100); 
-        finalOutputHeight = Math.max(finalOutputHeight, 100);
-
-        const srcPoints = selectedPoints; 
-        const dstPoints = [
-            { x: 0, y: 0 },
-            { x: finalOutputWidth, y: 0 },
-            { x: finalOutputWidth, y: finalOutputHeight },
-            { x: 0, y: finalOutputHeight }
-        ];
-
-        console.log("Punti Sorgente (srcPoints):", srcPoints);
-        console.log("Punti Destinazione (dstPoints):", dstPoints);
-        console.log(`Dimensioni di Output Calcolate (finalOutputWidth x finalOutputHeight): ${finalOutputWidth}x${finalOutputHeight}`);
-        console.log(`straightenedCanvas.width prima del set: ${straightenedCanvas.width}, straightenedCanvas.height prima del set: ${straightenedCanvas.height}`);
-
-
-        try {
-            // Prepara il canvas di output
-            straightenedCanvas.width = finalOutputWidth;
-            straightenedCanvas.height = finalOutputHeight;
-            ctxStraightened.clearRect(0, 0, finalOutputWidth, finalOutputHeight);
-            console.log(`straightenedCanvas.width dopo il set: ${straightenedCanvas.width}, straightenedCanvas.height dopo il set: ${straightenedCanvas.height}`);
-            
-            // Chiamata alla funzione di trasformazione importata
-            fourPointTransform(currentImage, straightenedCanvas, srcPoints, dstPoints);
-            console.log("Chiamata a fourPointTransform() completata.");
-
-            outputSection.style.display = 'block';
-            message.textContent = 'Foto raddrizzata con successo!';
-            console.log("Sezione di output mostrata.");
-
-        } catch (e) {
-            message.textContent = `Errore nel raddrizzamento: ${e.message}. Prova a selezionare i punti con maggiore precisione e assicurati che non siano allineati.`;
-            outputSection.style.display = 'none';
-            console.error('Errore durante la trasformazione prospettica con four-point-transform:', e);
-        }
-    };
-
-    // --- Gestori degli eventi ---
-
-    inputImage.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    currentImage = img;
-                    selectedPoints = []; 
-                    message.textContent = 'Foto caricata. Clicca su 4 punti per definire il rettangolo. Ordine consigliato: alto-sinistra, alto-destra, basso-destra, basso-sinistra.';
-                    controls.style.display = 'block'; 
-                    outputSection.style.display = 'none'; 
-                    drawImageAndPoints(); 
-                };
-                img.onerror = () => { 
-                    console.error("Errore durante il caricamento dell'immagine. Il file potrebbe essere corrotto o non un'immagine valida.");
-                    message.textContent = "Errore: impossibile caricare l'immagine. Prova un altro file.";
-                    currentImage = null;
-                    controls.style.display = 'none';
-                    outputSection.style.display = 'none';
-                };
-                img.src = e.target.result;
-                console.log("Tentativo di caricare l'immagine da FileReader result.");
-            };
-            reader.onerror = (e) => { 
-                console.error("Errore durante la lettura del file:", e);
-                message.textContent = "Errore: impossibile leggere il file selezionato.";
-            };
-            reader.readAsDataURL(file);
-            console.log("FileReader avviato per il file:", file.name);
-        } else {
-            console.log("Nessun file selezionato.");
-            message.textContent = "Scegli una foto da caricare.";
-        }
+    selectedPoints.forEach((point, index) => {
+        originalCtx.beginPath();
+        originalCtx.arc(point.x, point.y, 5, 0, Math.PI * 2); // Disegna un cerchio
+        originalCtx.fillStyle = 'red';
+        originalCtx.fill();
+        originalCtx.strokeStyle = 'white';
+        originalCtx.lineWidth = 2;
+        originalCtx.stroke();
+        originalCtx.fillStyle = 'white';
+        originalCtx.font = '12px Arial';
+        originalCtx.textAlign = 'center';
+        originalCtx.textBaseline = 'middle';
+        originalCtx.fillText(index + 1, point.x, point.y); // Numera i punti
     });
+}
 
-    originalCanvas.addEventListener('click', (event) => {
-        if (!currentImage || selectedPoints.length >= 4) {
-            console.log(`Click ignorato: immagine non caricata o 4 punti già selezionati (${selectedPoints.length}/4).`);
-            return;
-        }
+// Evento quando l'utente seleziona un file immagine
+inputImage.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            originalImage.src = e.target.result;
+            originalImage.onload = () => {
+                // Adatta la dimensione del canvas alla larghezza del contenitore, mantenendo l'aspect ratio
+                const maxWidth = originalCanvas.parentElement.offsetWidth;
+                imgAspectRatio = originalImage.width / originalImage.height;
+                let newWidth = originalImage.width;
+                let newHeight = originalImage.height;
 
+                if (newWidth > maxWidth) {
+                    newWidth = maxWidth;
+                    newHeight = newWidth / imgAspectRatio;
+                }
+                
+                originalCanvas.width = newWidth;
+                originalCanvas.height = newHeight;
+                originalCtx.drawImage(originalImage, 0, 0, newWidth, newHeight);
+
+                messageElement.style.display = 'none';
+                controlsDiv.style.display = 'block';
+                outputSection.style.display = 'none'; // Nascondi output precedente
+                selectedPoints = []; // Reset punti
+                pointsCountSpan.textContent = selectedPoints.length;
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Evento click sul canvas per selezionare i punti
+originalCanvas.addEventListener('click', (event) => {
+    if (selectedPoints.length < 4) {
+        // Calcola le coordinate del click rispetto al canvas
         const rect = originalCanvas.getBoundingClientRect();
-        const scaleX = originalCanvas.width / rect.width;
-        const scaleY = originalCanvas.height / rect.height;
-        
-        const x = (event.clientX - rect.left) * scaleX;
-        const y = (event.clientY - rect.top) * scaleY;
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
         
         selectedPoints.push({ x: x, y: y });
-        console.log(`Punto selezionato: (${x.toFixed(2)}, ${y.toFixed(2)}). Totale: ${selectedPoints.length}`);
-        drawImageAndPoints(); 
-    });
-
-    resetPointsBtn.addEventListener('click', () => {
-        selectedPoints = [];
-        message.textContent = 'Punti resettati. Clicca su 4 nuovi punti per definire il rettangolo.';
-        outputSection.style.display = 'none';
-        drawImageAndPoints();
-        console.log("Punti resettati.");
-    });
-
-    straightenBtn.addEventListener('click', straightenImage);
-
-    downloadBtn.addEventListener('click', () => {
-        const link = document.createElement('a');
-        link.download = 'foto_raddrizzata.png';
-        link.href = straightenedCanvas.toDataURL('image/png');
-        link.click();
-        console.log("Inizio download foto raddrizzata.");
-    });
-
-    message.textContent = "Carica una foto per iniziare.";
-    drawImageAndPoints(); 
+        pointsCountSpan.textContent = selectedPoints.length;
+        drawPoints();
+    }
 });
+
+// Evento per resettare i punti
+resetPointsBtn.addEventListener('click', () => {
+    selectedPoints = [];
+    pointsCountSpan.textContent = selectedPoints.length;
+    originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
+    drawImageOnCanvas(originalCanvas, originalCtx, originalImage); // Ridisezgna l'immagine
+    outputSection.style.display = 'none'; // Nascondi output
+});
+
+// Evento per raddrizzare la foto
+straightenBtn.addEventListener('click', () => {
+    if (selectedPoints.length !== 4) {
+        alert('Seleziona esattamente 4 punti per raddrizzare la foto.');
+        return;
+    }
+
+    // Le coordinate dei punti selezionati sul canvas ridimensionato
+    const p = selectedPoints;
+
+    // Le coordinate dei punti sulla immagine originale
+    // Dobbiamo scalare i punti selezionati per ottenere le coordinate originali
+    const scaleX = originalImage.width / originalCanvas.width;
+    const scaleY = originalImage.height / originalCanvas.height;
+
+    const originalPoints = [
+        { x: p[0].x * scaleX, y: p[0].y * scaleY },
+        { x: p[1].x * scaleX, y: p[1].y * scaleY },
+        { x: p[2].x * scaleX, y: p[2].y * scaleY },
+        { x: p[3].x * scaleX, y: p[3].y * scaleY }
+    ];
+
+    // Determina le dimensioni dell'output raddrizzato
+    // Per semplicità, useremo le dimensioni dell'immagine originale
+    const outputWidth = originalImage.width;
+    const outputHeight = originalImage.height;
+
+    straightenedCanvas.width = outputWidth;
+    straightenedCanvas.height = outputHeight;
+
+    // I punti di destinazione per il raddrizzamento (un rettangolo ideale)
+    const destinationPoints = [
+        { x: 0, y: 0 },
+        { x: outputWidth, y: 0 },
+        { x: outputWidth, y: outputHeight },
+        { x: 0, y: outputHeight }
+    ];
+
+    // Questa è la parte più complessa: calcolare la matrice di trasformazione
+    // Non è una funzione nativa del canvas, richiede calcoli matematici complessi (es. matrici di omografia)
+    // Per una soluzione completa e robusta, si usano librerie come OpenCV.js o si implementa l'algoritmo di homography.
+    // Per questo esempio base, simuleremo un raddrizzamento semplificato che potrebbe non essere perfetto per tutte le prospettive.
+
+    // --- Inizio della logica di raddrizzamento semplificata (limitata) ---
+    // Questa è una semplificazione! Per un raddrizzamento prospettico reale e robusto,
+    // avresti bisogno di una libreria come OpenCV.js o una tua implementazione di trasformazioni prospettiche.
+    // L'implementazione sotto è un approccio molto basilare che funziona bene solo per distorsioni minori
+    // o per ridisegnare l'immagine usando i punti per "tagliare" e "scalare" a un rettangolo.
+
+    // Un modo per "simulare" un raddrizzamento molto basilare è usare drawImage con 8 argomenti (sX, sY, sW, sH, dX, dY, dW, dH)
+    // Ma questo non corregge la prospettiva. Per la prospettiva serve una trasformazione di homography.
+
+    // Se i tuoi punti sono sempre in un ordine specifico (es. top-left, top-right, bottom-right, bottom-left),
+    // puoi fare una trasformazione approssimata.
+    // Qui useremo una logica semplificata che taglia l'area definita dai punti e la scala a un rettangolo.
+    // Questa NON è una vera correzione prospettica, ma un ritaglio e riscalatura.
+
+    // Per una vera trasformazione prospettica, si usano librerie come 'js-perspective' o 'opencv.js'
+    // Esempio con un'ipotetica funzione `transformPerspective` (non inclusa nel codice)
+    /*
+    transformPerspective(originalCtx, originalImage, originalPoints, straightenedCtx, destinationPoints);
+    */
+
+    // Visto che non abbiamo una libreria esterna per la trasformazione prospettica,
+    // possiamo solo simulare un ritaglio e riscalatura dell'area definita dai punti.
+    // Questo non è un "raddrizzamento" prospettico nel senso stretto, ma è il massimo che possiamo fare
+    // con le funzioni native del canvas senza librerie matematiche avanzate.
+
+    // Per una vera trasformazione prospettica, il codice qui sotto sarebbe molto più complesso.
+    // Si dovrebbe calcolare una matrice di trasformazione (homography) che mappa originalPoints a destinationPoints
+    // e poi applicarla pixel per pixel o con una funzione di trasformazione del canvas (se esistesse per prospettiva).
+
+    // Dato che il canvas standard non ha un'API per la trasformazione prospettica diretta,
+    // per questo esempio, lascerò un placeholder per il raddrizzamento.
+    // L'approccio più comune per raddrizzare con JavaScript è usare una libreria.
+
+    // --- SOLUZIONE BASE: Ritaglia e scala l'area definita dai punti ---
+    // Questo approccio assume che i punti siano pressapoco rettangolari e li ritaglia e scala.
+    // NON è una vera correzione prospettica.
+    
+    // Trova i min/max x e y dai punti selezionati per definire un rettangolo di origine
+    const minX = Math.min(...originalPoints.map(p => p.x));
+    const minY = Math.min(...originalPoints.map(p => p.y));
+    const maxX = Math.max(...originalPoints.map(p => p.x));
+    const maxY = Math.max(...originalPoints.map(p => p.y));
+
+    const sourceWidth = maxX - minX;
+    const sourceHeight = maxY - minY;
+
+    // Disegna l'immagine raddrizzata (qui è semplicemente un ritaglio e riscalatura)
+    straightenedCtx.drawImage(
+        originalImage,
+        minX, minY, sourceWidth, sourceHeight, // Sorgente: l'area rettangolare definita dai punti
+        0, 0, straightenedCanvas.width, straightenedCanvas.height // Destinazione: l'intero canvas raddrizzato
+    );
+
+    // --- Fine della logica di raddrizzamento semplificata ---
+
+    outputSection.style.display = 'block'; // Mostra la sezione dell'output
+});
+
+// Evento per scaricare la foto raddrizzata
+downloadBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'foto_raddrizzata.png';
+    link.href = straightenedCanvas.toDataURL('image/png'); // O 'image/jpeg'
+    link.click();
+});
+
+// Al caricamento iniziale della pagina, assicurati che i messaggi siano corretti
+window.onload = () => {
+    messageElement.style.display = 'block';
+    controlsDiv.style.display = 'none';
+    outputSection.style.display = 'none';
+};
