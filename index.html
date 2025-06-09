@@ -8,10 +8,15 @@
 </head>
 <body>
     <h1>Seleziona Punti sull'Immagine</h1>
+
+    <input type="file" id="imageUpload" accept="image/*">
+    <p>Seleziona un'immagine da caricare.</p>
+
     <div class="image-container">
-        <img id="imageToProcess" src="your_image.jpg" alt="Immagine da elaborare">
+        <img id="imageToProcess" src="" alt="Carica un'immagine">
         <canvas id="imageCanvas"></canvas>
     </div>
+    
     <script src="script.js"></script>
 </body>
 </html>
