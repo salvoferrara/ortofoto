@@ -1,11 +1,21 @@
+/* NUOVO: Imposta altezza al 100% per html e body per garantire che l'altezza percentuale funzioni */
+html, body {
+    height: 100%;
+    margin: 0; /* Rimuove i margini predefiniti del body */
+    padding: 0; /* Rimuove il padding predefinito */
+}
+
 body {
     font-family: sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 20px;
+    margin: 20px; /* Lasciamo il margine esterno per distaccare dal bordo della finestra */
     background-color: #f4f4f4;
     color: #333;
+    /* AGGIUNTA: Assicuriamo che il body possa usare l'intera larghezza disponibile */
+    width: 100%; 
+    box-sizing: border-box; /* Include padding e border nel calcolo della larghezza/altezza */
 }
 
 h1 {
@@ -20,9 +30,13 @@ h1 {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: flex;
-    gap: 10px; /* Spazio tra i pulsanti */
-    flex-wrap: wrap; /* Permette ai pulsanti di andare a capo su schermi piccoli */
+    gap: 10px;
+    flex-wrap: wrap;
     justify-content: center;
+    /* AGGIUNTA: Rende i controlli più flessibili in larghezza */
+    width: 100%;
+    max-width: 800px; /* Limita la larghezza massima per non farli allargare troppo su schermi grandi */
+    box-sizing: border-box;
 }
 
 .controls button,
@@ -49,7 +63,6 @@ h1 {
     cursor: not-allowed;
 }
 
-/* Stile specifico per l'input file */
 .controls input[type="file"] {
     background-color: #f8f9fa;
     border: 1px solid #ced4da;
@@ -70,28 +83,34 @@ h1 {
 
 .image-container {
     position: relative; 
-    display: inline-block; 
-    border: 2px solid #007bff; /* Bordo più evidente per il contenitore dell'immagine */
-    max-width: 90vw; /* Non più del 90% della larghezza della viewport */
-    max-height: 80vh; /* Non più del 80% dell'altezza della viewport */
+    display: block; /* Modificato da inline-block a block per un comportamento più prevedibile della larghezza */
+    border: 2px solid #007bff;
+    /* RIMOSSO: max-width: 90vw; - lo impostiamo diversamente */
+    max-height: 80vh; /* Mantieniamo il limite sull'altezza */
     overflow: hidden; 
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    margin-top: 20px; /* Spazio sopra il contenitore */
+    margin-top: 20px; 
 
-    /* AGGIUNTA FONDAMENTALE: altezza minima per il contenitore */
-    min-height: 300px; /* O un valore che ritieni adeguato per un'area iniziale visibile */
-    width: 100%; /* Assicura che prenda la larghezza disponibile */
-    /* Potresti anche considerare di usare min-width se necessario, ma di solito l'altezza è la chiave */
+    /* Altezza minima per il contenitore quando non c'è immagine */
+    min-height: 300px; 
+    /* AGGIUNTA CRUCIALE: Larghezza massima definita per il contenitore dell'immagine */
+    width: auto; /* Lascia che il contenuto o max-width la definiscano */
+    max-width: 900px; /* Imposta una larghezza massima più ragionevole, es. 900px */
+    
+    /* Assicurati che il contenitore possa centralizzarsi se ha una max-width */
+    margin-left: auto;
+    margin-right: auto;
+
+    box-sizing: border-box; /* Fondamentale per un corretto calcolo di larghezza e altezza con bordi e padding */
 }
 
-/* Queste regole sono CRUCIALI: assicurano che immagine e canvas si sovrappongano e si ridimensionino insieme */
 .image-container img,
 .image-container canvas {
-    display: block;
+    display: block; /* Assicura che si comportino come blocchi per il ridimensionamento */
     position: absolute; 
     top: 0;
     left: 0;
     width: 100%; /* Occupano il 100% della larghezza del loro contenitore */
     height: 100%; /* Occupano il 100% dell'altezza del loro contenitore */
-    object-fit: contain; /* L'immagine si adatta all'interno del contenitore mantenendo le sue proporzioni */
+    object-fit: contain; 
 }
