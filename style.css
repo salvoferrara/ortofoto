@@ -77,6 +77,11 @@ h1 {
     overflow: hidden; 
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     margin-top: 20px; /* Spazio sopra il contenitore */
+
+    /* AGGIUNTA FONDAMENTALE: altezza minima per il contenitore */
+    min-height: 300px; /* O un valore che ritieni adeguato per un'area iniziale visibile */
+    width: 100%; /* Assicura che prenda la larghezza disponibile */
+    /* Potresti anche considerare di usare min-width se necessario, ma di solito l'altezza è la chiave */
 }
 
 /* Queste regole sono CRUCIALI: assicurano che immagine e canvas si sovrappongano e si ridimensionino insieme */
