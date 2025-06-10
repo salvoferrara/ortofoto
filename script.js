@@ -58,7 +58,7 @@ function updateUIState() {
     resetPointsBtn.style.display = 'inline-block'; // Mostra il pulsante Reset
 
     // Gestisce il messaggio di stato e la visibilità dei pulsanti Processa/Scarica
-    in base al numero di punti selezionati.
+    // in base al numero di punti selezionati.
     if (points.length < MAX_POINTS) {
         statusMessage.textContent = `Clicca sull'immagine per selezionare il punto ${points.length + 1}.`;
         statusMessage.style.color = 'blue';
@@ -149,6 +149,8 @@ imageUpload.addEventListener('change', (event) => {
             // Quando il file è stato letto, imposta l'URL risultante come sorgente dell'immagine.
             // Questo farà sì che il browser carichi e visualizzi l'immagine.
             imageElement.src = e.target.result; 
+            // *** NUOVO LOG: Verifica il valore impostato per src ***
+            console.log(`[DEBUG] imageElement.src impostato a: ${imageElement.src.substring(0, 50)}...`); 
             points = []; // Resetta l'array dei punti per la nuova immagine
             // L'evento 'imageElement.onload' si attiverà automaticamente dopo che l'immagine
             // sarà stata caricata dal browser, e chiamerà resizeCanvasToNaturalSize() e updateUIState().
